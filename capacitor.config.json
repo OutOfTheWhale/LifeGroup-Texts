@@ -1,0 +1,13 @@
+{
+  "appId": "com.lifegrouptext.app",
+  "appName": "Life Group Texts",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}
