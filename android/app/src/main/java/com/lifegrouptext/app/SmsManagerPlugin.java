@@ -21,6 +21,24 @@ import com.getcapacitor.annotation.PermissionCallback;
 )
 public class SmsManagerPlugin extends Plugin {
 
+    private String sanitizeText(String text) {
+        if (text == null) return null;
+        return text
+            // Replace curly apostrophes/quotes with straight ones
+            .replace('\u2018', '\'')
+            .replace('\u2019', '\'')
+            .replace('\u201C', '"')
+            .replace('\u201D', '"')
+            // Replace em/en dashes with hyphens
+            .replace('\u2013', '-')
+            .replace('\u2014', '-')
+            // Replace ellipsis with three dots
+            .replace('\u2026', '.')
+            // Normalize line endings
+            .replace("\r\n", "\n")
+            .replace('\r', '\n');
+    }
+
     @PluginMethod
     public void send(PluginCall call) {
         String to = call.getString("to");
@@ -43,7 +61,8 @@ public class SmsManagerPlugin extends Plugin {
             } else {
                 smsManager = SmsManager.getDefault();
             }
-            smsManager.sendTextMessage(to, null, text, null, null);
+            String sanitized = sanitizeText(text);
+            smsManager.sendTextMessage(to, null, sanitized, null, null);
             JSObject result = new JSObject();
             result.put("success", true);
             call.resolve(result);
