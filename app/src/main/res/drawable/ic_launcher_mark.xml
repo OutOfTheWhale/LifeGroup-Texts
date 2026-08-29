@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Black field with a white speech bubble and three message lines. Drawn at the full
+     108dp adaptive-icon size; the art stays inside the 72dp safe zone so no launcher
+     mask clips it. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#000000"
+        android:pathData="M0,0h108v108h-108z" />
+
+    <!-- Bubble outline -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,34h44a6,6 0,0 1,6 6v26a6,6 0,0 1,-6 6h-24l-14,12v-12h-6a6,6 0,0 1,-6 -6v-26a6,6 0,0 1,6 -6zM32,40v26h12v6l7,-6h25v-26z" />
+
+    <!-- Message lines -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M39,47h30v4h-30zM39,55h20v4h-20z" />
+</vector>
