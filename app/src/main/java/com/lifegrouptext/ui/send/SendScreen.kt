@@ -191,17 +191,6 @@ private fun SendFooter(
                 )
             }
 
-            state.recipients.isNotEmpty() && state.hasMessage -> {
-                // State the real cost up front: segments multiply by recipient, and the
-                // carrier bills each one.
-                Text(
-                    text = "${countOf(state.recipients.size, "person", "people")} · " +
-                        "${countOf(state.metrics.segments, "text")} each · " +
-                        "${state.totalTexts} total",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Slate,
-                )
-            }
         }
 
         PrimaryButton(

@@ -11,9 +11,7 @@ import com.lifegrouptext.domain.Group
 import com.lifegrouptext.sms.BulkSender
 import com.lifegrouptext.sms.SendProgress
 import com.lifegrouptext.sms.SendSummary
-import com.lifegrouptext.sms.SmsMetrics
 import com.lifegrouptext.sms.SmsSender
-import com.lifegrouptext.sms.SmsText
 import com.lifegrouptext.ui.containerViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,7 +27,6 @@ data class SendUiState(
     val selectedContactIds: Set<Long> = emptySet(),
     val selectedGroupIds: Set<Long> = emptySet(),
     val body: String = "",
-    val metrics: SmsMetrics = SmsText.measure(""),
 ) {
     /** Everyone the message will go to: hand-picked people plus every selected group's members. */
     val recipients: List<Contact>
@@ -46,8 +43,6 @@ data class SendUiState(
     val hasMessage: Boolean get() = body.isNotBlank()
     val canSend: Boolean get() = hasMessage && recipients.isNotEmpty()
 
-    /** Segments per recipient multiplied out — what the carrier will actually bill. */
-    val totalTexts: Int get() = metrics.segments * recipients.size
 }
 
 class SendViewModel(
@@ -77,7 +72,6 @@ class SendViewModel(
             selectedContactIds = pickedContacts intersect liveContactIds,
             selectedGroupIds = pickedGroups intersect liveGroupIds,
             body = body,
-            metrics = SmsText.measure(SmsText.sanitize(body)),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SendUiState())
 

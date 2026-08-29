@@ -19,8 +19,8 @@ type, no colour, no icons. A native rewrite of an earlier React + Capacitor vers
 - **Import from your phone.** Pull people straight out of the device's contact list, or
   type them in by hand. Numbers are matched on their last ten digits, so the same
   person saved two different ways won't be added twice.
-- **See what a message really costs** before you send it, and what actually happened
-  afterwards.
+- **See what actually happened.** The Log records the real result reported by the radio,
+  including why anything failed.
 
 ## Messages of any length
 
@@ -39,16 +39,21 @@ keyboard — switches the *whole* message to UCS-2, where a segment holds 70. Co
 with single-segment sending, a short message could fail with no explanation.
 
 [`SmsText`](app/src/main/java/com/lifegrouptext/sms/SmsText.kt) implements the encoding
-rules properly. The Message screen counts segments live, names the exact characters
-forcing Unicode, and offers to rewrite the punctuation or drop them. Emoji aren't
-censored — they just cost more, and the app says so instead of failing.
+rules properly and rewrites smart punctuation to its plain equivalent before sending.
+Emoji are left alone — they send correctly now, they just occupy more segments.
+
+The app deliberately does **not** show a segment count. The recipient sees one message
+however many segments it took, so the number only ever mattered for per-text billing,
+and reporting "3 texts" for one message invites exactly the second-guessing that led to
+the old split-message workaround. The composer shows a plain character count.
 
 **Failures are visible.** Every segment reports back through a `PendingIntent`, so the
 Log records what the radio actually said — "No cell service", "Radio is off" — rather
 than assuming success.
 
-> **Carriers bill per segment.** A 400-character message to 20 people is 60 texts, not
-> 20. The Send screen states the total before you commit.
+> **On a metered plan, note that carriers bill per segment** — a 400-character message
+> to 20 people is 60 texts, not 20. Nothing in the app surfaces this, on the assumption
+> of unlimited texting.
 
 ## Install
 

@@ -21,7 +21,6 @@ import com.lifegrouptext.ui.components.CenteredNote
 import com.lifegrouptext.ui.components.RowDivider
 import com.lifegrouptext.ui.components.ScreenHeader
 import com.lifegrouptext.ui.components.SecondaryButton
-import com.lifegrouptext.ui.components.countOf
 import com.lifegrouptext.ui.components.formatPhone
 import com.lifegrouptext.ui.components.formatTimestamp
 import com.lifegrouptext.ui.theme.Ash
@@ -79,10 +78,6 @@ private fun LogRow(entry: SendLogEntry) {
                 append(formatPhone(entry.phone))
                 append(" · ")
                 append(formatTimestamp(entry.sentAt))
-                if (entry.segments > 0) {
-                    append(" · ")
-                    append(countOf(entry.segments, "text"))
-                }
             },
             style = MaterialTheme.typography.bodyMedium,
             color = Slate,

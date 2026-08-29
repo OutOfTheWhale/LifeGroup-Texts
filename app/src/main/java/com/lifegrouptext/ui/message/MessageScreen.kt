@@ -20,13 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lifegrouptext.domain.NAME_TOKEN
 import com.lifegrouptext.domain.previewOf
-import com.lifegrouptext.sms.SmsMetrics
 import com.lifegrouptext.ui.components.Panel
 import com.lifegrouptext.ui.components.trackEditing
 import com.lifegrouptext.ui.components.ScreenHeader
@@ -91,19 +89,12 @@ fun MessageScreen(
                 },
             )
 
-            SegmentCounter(state.metrics)
+            CharacterCount(state.body.length)
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SecondaryButton(text = "Insert $NAME_TOKEN", onClick = viewModel::insertNameToken)
             }
 
-            if (state.isUcs2) {
-                SpecialCharacterNotice(
-                    offenders = state.offenders,
-                    onTidy = viewModel::tidyPunctuation,
-                    onStrip = viewModel::removeSpecialCharacters,
-                )
-            }
 
             if (!state.isEmpty) {
                 SectionLabel("Preview", Modifier.padding(horizontal = 0.dp))
@@ -119,78 +110,15 @@ fun MessageScreen(
     }
 }
 
-/**
- * Reports what the message actually costs. Characters alone are misleading, because
- * the per-segment allowance depends on the alphabet in use.
- */
+/** Just how long the message is. The phone handles splitting and the recipient
+ * sees one message either way, so segment counts would only be noise. */
 @Composable
-private fun SegmentCounter(metrics: SmsMetrics) {
-    val unitWord = if (metrics.encoding == com.lifegrouptext.sms.SmsEncoding.UCS2) {
-        "characters (Unicode)"
-    } else {
-        "characters"
-    }
-    val segmentText = when (metrics.segments) {
-        0 -> "empty"
-        1 -> "1 text"
-        else -> "${metrics.segments} texts"
-    }
-
-    Row(
+private fun CharacterCount(characters: Int) {
+    Text(
+        text = "$characters characters",
+        style = MaterialTheme.typography.bodyMedium,
+        color = Slate,
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(
-            text = "${metrics.units} $unitWord",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Slate,
-        )
-        Text(
-            text = if (metrics.segments > 1) {
-                "$segmentText · ${metrics.remaining} left in this one"
-            } else {
-                "$segmentText · ${metrics.remaining} left"
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (metrics.segments > 1) Ink else Slate,
-        )
-    }
+    )
 }
 
-/**
- * Shown only when something has pushed the message to UCS-2. This is the failure the
- * old app hit silently, so it is stated plainly along with the two ways out.
- */
-@Composable
-private fun SpecialCharacterNotice(
-    offenders: List<String>,
-    onTidy: () -> Unit,
-    onStrip: () -> Unit,
-) {
-    Panel {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                text = "Special characters are shortening your texts",
-                style = MaterialTheme.typography.titleMedium,
-                color = Ink,
-            )
-            Text(
-                text = "These characters can't be sent in the plain SMS alphabet, so each " +
-                    "text now holds 70 characters instead of 160: " +
-                    offenders.take(12).joinToString(" "),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Slate,
-            )
-            Text(
-                text = "The message will still send correctly — it just costs more texts.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Ash,
-                fontStyle = FontStyle.Italic,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SecondaryButton(text = "Fix punctuation", onClick = onTidy)
-                SecondaryButton(text = "Remove them", onClick = onStrip)
-            }
-        }
-    }
-}
