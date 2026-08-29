@@ -5,20 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -32,6 +30,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.lifegrouptext.ui.components.EditingTracker
+import com.lifegrouptext.ui.components.LocalEditingTracker
 import com.lifegrouptext.ui.log.LogScreen
 import com.lifegrouptext.ui.message.MessageScreen
 import com.lifegrouptext.ui.people.ImportContactsScreen
@@ -65,7 +65,6 @@ private fun Dest.owns(route: String?): Boolean = when (this) {
     Dest.Log -> route == Routes.LOG
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LifeGroupRoot() {
     val navController = rememberNavController()
@@ -83,13 +82,15 @@ fun LifeGroupRoot() {
     // On a screen this small the keyboard covers most of the window. Swapping the tab
     // bar for a single wide Done button means there is always one large, obvious way
     // out of a text field — the tabs come straight back once it is dismissed.
-    val imeVisible = WindowInsets.isImeVisible
+    // adjustResize (see the manifest) shrinks the window, so the bar sits just above
+    // the keyboard rather than being pushed off-screen.
+    val editing = remember { EditingTracker() }
 
+    CompositionLocalProvider(LocalEditingTracker provides editing) {
     Scaffold(
-        modifier = Modifier.imePadding(),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            if (imeVisible) {
+            if (editing.isEditing) {
                 KeyboardDoneBar(onDone = dismissKeyboard)
             } else {
                 LightBottomBar(
@@ -132,6 +133,7 @@ fun LifeGroupRoot() {
                 composable(Routes.LOG) { LogScreen() }
             }
         }
+    }
     }
 }
 

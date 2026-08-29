@@ -65,7 +65,7 @@ fun LightTextField(
             focusedTextColor = Ink,
             unfocusedTextColor = Ink,
         ),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().trackEditing(),
     )
 }
 

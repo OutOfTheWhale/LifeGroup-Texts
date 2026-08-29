@@ -28,6 +28,7 @@ import com.lifegrouptext.domain.NAME_TOKEN
 import com.lifegrouptext.domain.previewOf
 import com.lifegrouptext.sms.SmsMetrics
 import com.lifegrouptext.ui.components.Panel
+import com.lifegrouptext.ui.components.trackEditing
 import com.lifegrouptext.ui.components.ScreenHeader
 import com.lifegrouptext.ui.components.SecondaryButton
 import com.lifegrouptext.ui.components.SectionLabel
@@ -76,7 +77,8 @@ fun MessageScreen(
                     .fillMaxWidth()
                     .heightIn(min = 160.dp)
                     .border(1.dp, Hairline, RoundedCornerShape(12.dp))
-                    .padding(14.dp),
+                    .padding(14.dp)
+                    .trackEditing(),
                 decorationBox = { inner ->
                     if (state.body.isEmpty()) {
                         Text(
