@@ -6,6 +6,7 @@ import com.lifegrouptext.data.ContactRepository
 import com.lifegrouptext.di.AppContainer
 import com.lifegrouptext.domain.PhoneContact
 import com.lifegrouptext.domain.PhoneNumber
+import com.lifegrouptext.domain.contactMatches
 import com.lifegrouptext.ui.containerViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,9 +45,7 @@ class ImportContactsViewModel(
         combine(phoneContacts, query, savedNumbers, loading, permissionDenied) {
                 found, text, saved, isLoading, denied ->
             val filtered = found.filter { candidate ->
-                text.isBlank() ||
-                    candidate.name.contains(text, ignoreCase = true) ||
-                    candidate.phone.contains(PhoneNumber.normalize(text))
+                contactMatches(candidate.name, candidate.phone, text)
             }
             ImportUiState(
                 loading = isLoading,

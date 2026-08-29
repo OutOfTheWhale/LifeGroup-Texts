@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,7 @@ import com.lifegrouptext.ui.components.BackHeader
 import com.lifegrouptext.ui.components.CenteredNote
 import com.lifegrouptext.ui.components.LightTextField
 import com.lifegrouptext.ui.components.ListRow
+import com.lifegrouptext.ui.components.LocalEditingTracker
 import com.lifegrouptext.ui.components.RowDivider
 import com.lifegrouptext.ui.components.formatPhone
 import com.lifegrouptext.ui.theme.Ash
@@ -40,6 +42,9 @@ fun ImportContactsScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val keyboard = LocalSoftwareKeyboardController.current
+    // With the keyboard up there is barely any room left on an LP3, and the results
+    // are the whole point of this screen — so the title bar steps aside while typing.
+    val editing = LocalEditingTracker.current.isEditing
 
     val requestPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -55,7 +60,7 @@ fun ImportContactsScreen(
     }
 
     Column(Modifier.fillMaxSize()) {
-        BackHeader("Import contacts", onBack)
+        if (!editing) BackHeader("Import contacts", onBack)
 
         LightTextField(
             value = state.query,
@@ -63,9 +68,10 @@ fun ImportContactsScreen(
             placeholder = "Search your contacts",
             imeAction = ImeAction.Search,
             onSubmit = { keyboard?.hide() },
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = if (editing) 6.dp else 12.dp),
         )
 
+        Box(Modifier.weight(1f)) {
         when {
             state.permissionDenied -> CenteredNote(
                 "Life Group Texts needs permission to read your contacts. " +
@@ -99,6 +105,7 @@ fun ImportContactsScreen(
                     RowDivider()
                 }
             }
+        }
         }
     }
 }
