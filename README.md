@@ -1,75 +1,82 @@
 # Life Group Texts
 
-Send one message to your church life group from your own number, straight from a Light
+Send one message to your whole church life group, from your own number, on a Light
 Phone III. No accounts, no third-party service, nothing leaves the phone.
 
-A native Kotlin/Compose rewrite of the earlier React + Capacitor app, styled to match
-LightOS. Not built with the Light SDK — `SEND_SMS` and `READ_CONTACTS` are not on the
-SDK's permission allowlist — so this is a plain Android app that follows Light's design
-language, the same approach as the Channels app.
+Built in Kotlin and Jetpack Compose, styled to match LightOS — black ground, white
+type, no colour, no icons. A native rewrite of an earlier React + Capacitor version.
 
-## Screens
+| Send | People | Message | Log |
+|:----:|:------:|:-------:|:---:|
+| ![Send](screenshots/send.png) | ![People](screenshots/people.png) | ![Message](screenshots/message.png) | ![Log](screenshots/log.png) |
 
-| Tab | What it does |
-|-----|--------------|
-| **Send** | Pick groups and individuals in any combination, review the message, send |
-| **People** | Add contacts by hand or import from the phone; create groups and set membership |
-| **Message** | Write one message of any length, with an honest segment counter |
-| **Log** | Every send with its real outcome, including why a failure failed |
+## What it does
+
+- **Pick recipients any way you like** — whole groups, hand-picked individuals, or a
+  mix. Selecting "Sunday Life Group" and adding two extra people is one tap each.
+- **Write once, personalise automatically.** Type `{name}` anywhere in the message and
+  each person gets their own first name.
+- **Import from your phone.** Pull people straight out of the device's contact list, or
+  type them in by hand. Numbers are matched on their last ten digits, so the same
+  person saved two different ways won't be added twice.
+- **See what a message really costs** before you send it, and what actually happened
+  afterwards.
 
 ## Messages of any length
 
-The previous version could only send 160 characters, and messages with an emoji or a
-curly apostrophe failed silently. Both had the same two causes:
+The previous version silently capped at 160 characters, and messages containing an
+emoji or a curly apostrophe failed for no visible reason. Two separate causes:
 
-1. **Single-segment sending.** It called `SmsManager.sendTextMessage`, which carries one
-   segment. Anything longer was rejected by the radio. This version uses
-   `divideMessage` + `sendMultipartTextMessage`, so a long message is split by the phone
-   and reassembled on the recipient's end as one message.
+**Single-segment sending.** It called `SmsManager.sendTextMessage`, which carries
+exactly one segment — the radio rejected anything longer. This version uses
+`divideMessage` + `sendMultipartTextMessage`, so the phone splits a long message and the
+recipient's phone reassembles it into one. Type 500 characters into one box; it arrives
+as one message.
 
-2. **Silent encoding promotion.** SMS uses the GSM 03.38 alphabet, where a segment holds
-   160 characters. A single character outside that alphabet — an emoji, a smart quote
-   pasted from a phone keyboard — switches the whole message to UCS-2, where a segment
-   holds only 70. Combined with single-segment sending, a short message could fail for
-   no visible reason.
+**Silent encoding promotion.** SMS uses the GSM 03.38 alphabet, where a segment holds
+160 characters. One character outside it — an emoji, a smart quote pasted from a phone
+keyboard — switches the *whole* message to UCS-2, where a segment holds 70. Combined
+with single-segment sending, a short message could fail with no explanation.
 
-`SmsText` handles the encoding rules and reports what a message actually costs. The
-Message screen shows the segment count as you type, names the characters forcing UCS-2,
-and offers to rewrite the punctuation or drop them. See `SmsTextTest` for the rules.
+[`SmsText`](app/src/main/java/com/lifegrouptext/sms/SmsText.kt) implements the encoding
+rules properly. The Message screen counts segments live, names the exact characters
+forcing Unicode, and offers to rewrite the punctuation or drop them. Emoji aren't
+censored — they just cost more, and the app says so instead of failing.
 
-Failures are also visible now: every segment reports back through a `PendingIntent`, so
-the Log shows what the radio actually said rather than assuming success.
+**Failures are visible.** Every segment reports back through a `PendingIntent`, so the
+Log records what the radio actually said — "No cell service", "Radio is off" — rather
+than assuming success.
 
-**Carriers bill per segment.** A 400-character message to 20 people is 60 texts, not 20.
-The Send screen states the total before you commit.
+> **Carriers bill per segment.** A 400-character message to 20 people is 60 texts, not
+> 20. The Send screen states the total before you commit.
+
+## Install
+
+Download [`dist/LifeGroupTexts-0.1.0.apk`](dist/LifeGroupTexts-0.1.0.apk) and sideload it:
+
+```bash
+adb install dist/LifeGroupTexts-0.1.0.apk
+```
+
+Or copy it to the phone and open it with a file manager, with "install from unknown
+sources" enabled. The APK is debug-signed; for a release-signed build, add your own
+keystore as `app/keystore.properties`.
 
 ## Build
 
-Requires Android Studio (JDK 17–21) and the Android SDK. `local.properties` is
-machine-specific and git-ignored; point `sdk.dir` at your SDK.
+Needs Android Studio (JDK 17–21) and the Android SDK. `local.properties` is
+machine-specific and git-ignored — point `sdk.dir` at your SDK.
 
 ```bash
 ./gradlew assembleDebug
 ```
 
-Install it:
-
-```bash
-adb install app/build/outputs/apk/debug/app-debug.apk
-```
-
-Run the tests:
-
 ```bash
 ./gradlew testDebugUnitTest
 ```
 
-## Design
-
-Palette and typography ported from the MIT-licensed Light SDK (`:sdk:ui`): background
-`#000000`, content `#FFFFFF`, secondary `#BBBBBB`. Akkurat is picked up from the LP3's
-system fonts when present and falls back to the platform default elsewhere — it is a
-commercial typeface and is deliberately not bundled.
+The unit tests cover the encoding rules — segment maths, GSM vs UCS-2 promotion,
+punctuation rewriting — because that is where the original bugs lived.
 
 ## Permissions
 
@@ -78,7 +85,31 @@ commercial typeface and is deliberately not bundled.
 | `SEND_SMS` | Send texts from your own number |
 | `READ_CONTACTS` | Import people from the phone's contact list |
 
+## Design
+
+Palette and type scale ported from the MIT-licensed Light SDK (`:sdk:ui`): background
+`#000000`, content `#FFFFFF`, secondary `#BBBBBB`. Akkurat is picked up from the LP3's
+system fonts when present and falls back to the platform default elsewhere — it's a
+commercial typeface and is deliberately not bundled.
+
+This is **not** a Light SDK tool. `SEND_SMS` and `READ_CONTACTS` aren't on the SDK's
+permission allowlist, so a texting app can't be built with it today. This is a plain
+Android app that follows Light's design language and is sideloaded.
+
+## Architecture
+
+Compose UI over ViewModels, a Room database, and manual dependency wiring in
+[`AppContainer`](app/src/main/java/com/lifegrouptext/di/AppContainer.kt) — no DI
+framework, to keep the dependency footprint light.
+
+```
+domain/    Contact, Group, phone normalisation, {name} substitution
+data/      Room entities, DAOs, repositories
+sms/       SmsText (encoding rules), SmsSender (one message), BulkSender (a group)
+ui/        One package per screen: send, people, message, log
+```
+
 ## Privacy
 
 Contacts, groups, the draft message and the send log live in a local Room database on
-the device. There is no network code in this app.
+the device. The app has no network code and no internet permission.

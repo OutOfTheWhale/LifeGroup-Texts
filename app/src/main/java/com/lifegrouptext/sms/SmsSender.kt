@@ -117,7 +117,7 @@ class SmsSender(private val appContext: Context) {
             manager.sendMultipartTextMessage(phone, null, parts, sentIntents, null)
         } catch (e: Exception) {
             settle(cont, finished, receiver) {
-                SendResult.Failure(e.message ?: "Send failed", parts.size)
+                SendResult.Failure(describeException(e), parts.size)
             }
         }
     }
@@ -132,6 +132,25 @@ class SmsSender(private val appContext: Context) {
         if (!finished.compareAndSet(false, true)) return
         runCatching { appContext.unregisterReceiver(receiver) }
         if (cont.isActive) cont.resume(result())
+    }
+
+    /**
+     * Turn a thrown telephony error into something a person can act on. The platform's
+     * own messages name internal permissions and system services, which tells the user
+     * nothing — the raw text is appended, trimmed, only as a hint for debugging.
+     */
+    private fun describeException(e: Exception): String {
+        val plain = when {
+            e is SecurityException -> "The phone blocked the message — check the SIM and permissions"
+            e is IllegalArgumentException -> "That phone number was rejected"
+            e.message?.contains("no service", ignoreCase = true) == true -> "No cell service"
+            else -> "The phone could not send the message"
+        }
+        val detail = e.message
+            ?.substringBefore('.')
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() && it.length <= 60 }
+        return if (detail == null) plain else "$plain ($detail)"
     }
 
     private fun describe(code: Int): String = when (code) {

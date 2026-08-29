@@ -96,7 +96,7 @@ fun PeopleScreen(
                 item { EmptyLine("No groups yet.") }
             }
 
-            items(state.groups, key = { it.id }) { group ->
+            items(state.groups, key = { "group-${it.id}" }) { group ->
                 GroupRow(
                     group = group,
                     contacts = state.contacts,
@@ -136,7 +136,7 @@ fun PeopleScreen(
                 item { EmptyLine("No contacts yet. Add one, or import from your phone.") }
             }
 
-            items(state.contacts, key = { it.id }) { contact ->
+            items(state.contacts, key = { "contact-${it.id}" }) { contact ->
                 if (editing?.id == contact.id) {
                     ContactEntry(
                         initialName = contact.name,
