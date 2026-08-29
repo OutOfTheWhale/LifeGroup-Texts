@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -206,6 +207,8 @@ private fun EmptyLine(text: String) {
 @Composable
 private fun NameEntry(placeholder: String, onSubmit: (String) -> Unit) {
     var value by remember { mutableStateOf("") }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val submit = { keyboard?.hide(); onSubmit(value) }
     Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -215,9 +218,9 @@ private fun NameEntry(placeholder: String, onSubmit: (String) -> Unit) {
             onValueChange = { value = it },
             placeholder = placeholder,
             imeAction = ImeAction.Done,
-            onSubmit = { onSubmit(value) },
+            onSubmit = submit,
         )
-        SecondaryButton(text = "Create", onClick = { onSubmit(value) })
+        SecondaryButton(text = "Create", onClick = submit)
     }
 }
 
@@ -230,6 +233,8 @@ private fun ContactEntry(
 ) {
     var name by remember(initialName) { mutableStateOf(initialName) }
     var phone by remember(initialPhone) { mutableStateOf(initialPhone) }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val submit = { keyboard?.hide(); onSubmit(name, phone) }
 
     Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -247,11 +252,13 @@ private fun ContactEntry(
             placeholder = "Phone with area code",
             keyboardType = KeyboardType.Phone,
             imeAction = ImeAction.Done,
-            onSubmit = { onSubmit(name, phone) },
+            onSubmit = submit,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SecondaryButton(text = "Save", onClick = { onSubmit(name, phone) })
-            if (onCancel != null) SecondaryButton(text = "Cancel", onClick = onCancel)
+            SecondaryButton(text = "Save", onClick = submit)
+            if (onCancel != null) {
+                SecondaryButton(text = "Cancel", onClick = { keyboard?.hide(); onCancel() })
+            }
         }
     }
 }

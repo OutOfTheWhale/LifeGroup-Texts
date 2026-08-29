@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -38,6 +39,7 @@ fun ImportContactsScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val keyboard = LocalSoftwareKeyboardController.current
 
     val requestPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -60,6 +62,7 @@ fun ImportContactsScreen(
             onValueChange = viewModel::onQueryChange,
             placeholder = "Search your contacts",
             imeAction = ImeAction.Search,
+            onSubmit = { keyboard?.hide() },
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
         )
 
@@ -80,7 +83,10 @@ fun ImportContactsScreen(
                     ListRow(
                         title = row.contact.name,
                         subtitle = formatPhone(row.contact.phone),
-                        onClick = { viewModel.import(row) },
+                        onClick = {
+                            keyboard?.hide()
+                            viewModel.import(row)
+                        },
                         trailing = {
                             Text(
                                 text = if (row.alreadySaved) "Added" else "Add",
