@@ -57,10 +57,10 @@ than assuming success.
 
 ## Install
 
-Download [`dist/LifeGroupTexts-0.1.0.apk`](dist/LifeGroupTexts-0.1.0.apk) and sideload it:
+Download [`dist/LifeGroupTexts-2.0.0.apk`](dist/LifeGroupTexts-2.0.0.apk) and sideload it:
 
 ```bash
-adb install dist/LifeGroupTexts-0.1.0.apk
+adb install dist/LifeGroupTexts-2.0.0.apk
 ```
 
 Or copy it to the phone and open it with a file manager, with "install from unknown
